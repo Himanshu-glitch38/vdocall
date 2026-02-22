@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Responsive Glass Video Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom);
+      --chat-height: 40vh;
+    }
+
+    .glass {
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 20px 40px rgba(0,0,0,0.7);
+    }
+
+    .glass-soft {
+      background: rgba(30, 30, 30, 0.9);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    textarea {
+      resize: none;
+      overflow-y: auto;
+    }
+
+    #dragHandle {
+      touch-action: none;
+    }
+  </style>
+</head>
+
+<body class="bg-black text-white overflow-hidden">
+
+  <div class="flex w-full h-[100dvh]">
+
+    <!-- VIDEO SECTION -->
+    <div id="videoWrapper"
+      class="relative flex-1 w-full p-2 md:p-4"
+      style="height: calc(100dvh - var(--chat-height));">
+
+      <div class="relative w-full h-full rounded-3xl overflow-hidden glass">
+        <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+
+        <!-- Local video -->
+        <div class="absolute top-3 right-3 w-24 h-32 md:w-44 md:h-32 rounded-xl overflow-hidden glass-soft">
+          <video id="localVideo" autoplay muted playsinline class="w-full h-full object-cover"></video>
+        </div>
+
+        <!-- Like -->
+        <div class="absolute bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 glass-soft px-4 py-1 rounded-full text-xs">
+          ❤️ <span id="likeCount">0</span> Likes
+        </div>
+
+        <!-- Controls -->
+        <div class="absolute bottom-[calc(12px+var(--safe-bottom))] left-1/2 -translate-x-1/2 flex gap-3">
+          <button id="skipBtn" class="px-5 py-2 text-sm rounded-2xl glass-soft active:scale-95">Skip</button>
+          <button id="likeBtn" class="px-5 py-2 text-sm rounded-2xl glass-soft active:scale-95">Like</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT PANEL -->
+    <div id="chatPanel"
+      class="fixed md:static bottom-0 left-0 w-full md:w-[360px]
+             h-[40%] md:h-full
+             glass rounded-t-3xl md:rounded-none
+             flex flex-col overflow-hidden">
+
+      <!-- Drag Handle -->
+      <div id="dragHandle" class="md:hidden w-14 h-1.5 bg-white/30 rounded-full mx-auto my-2 cursor-ns-resize"></div>
+
+      <!-- Messages -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto px-4 pb-2 space-y-3 text-sm">
+        <div class="glass-soft px-3 py-2 rounded-xl w-fit">Hello 👋</div>
+        <div class="glass-soft px-3 py-2 rounded-xl w-fit ml-auto">Hi!</div>
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 border-t border-white/10 bg-[#0b0b0b]">
+        <div class="flex gap-2 items-end">
+          <textarea id="chatInput" rows="1"
+            placeholder="Type a message..."
+            class="flex-1 bg-transparent outline-none text-sm placeholder-gray-400 max-h-32"></textarea>
+
+          <button id="sendBtn"
+            class="px-4 py-2 rounded-xl glass-soft text-sm active:scale-95">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    const likeBtn = document.getElementById("likeBtn");
+    const likeCount = document.getElementById("likeCount");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatPanel = document.getElementById("chatPanel");
+    const dragHandle = document.getElementById("dragHandle");
+
+    let likes = 0;
+
+    likeBtn.onclick = () => {
+      likes++;
+      likeCount.textContent = likes;
+    };
+
+    // Auto-grow textarea
+    chatInput.addEventListener("input", () => {
+      chatInput.style.height = "auto";
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
+    });
+
+    // Send message
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      const msg = document.createElement("div");
+      msg.className = "glass-soft px-3 py-2 rounded-xl w-fit ml-auto";
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      chatInput.value = "";
+      chatInput.style.height = "auto";
+    }
+
+    sendBtn.onclick = sendMessage;
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // POINTER DRAG (mobile + desktop)
+    let startY = 0;
+    let startHeight = 0;
+    let dragging = false;
+
+    dragHandle.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      startY = e.clientY;
+      startHeight = chatPanel.offsetHeight;
+      dragHandle.setPointerCapture(e.pointerId);
+      document.body.style.userSelect = "none";
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+
+      const dy = startY - e.clientY;
+      const minH = window.innerHeight * 0.25;
+      const maxH = window.innerHeight * 0.9;
+      const newHeight = Math.min(maxH, Math.max(minH, startHeight + dy));
+
+      chatPanel.style.height = newHeight + "px";
+      document.documentElement.style.setProperty("--chat-height", newHeight + "px");
+    });
+
+    window.addEventListener("pointerup", () => {
+      dragging = false;
+      document.body.style.userSelect = "";
+    });
+
+    // Camera start
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+
+        localVideo.srcObject = stream;
+        remoteVideo.srcObject = stream; // demo only
+      } catch {
+        alert("Camera permission denied");
+      }
+
+      // initial sync
+      document.documentElement.style.setProperty("--chat-height", chatPanel.offsetHeight + "px");
+    }
+
+    startCamera();
+  </script>
+
+</body>
+</html>
