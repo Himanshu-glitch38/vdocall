@@ -12,6 +12,11 @@ app.get("/", (req, res) => {
     res.render("index", {v});
 });
 
+app.get("/video", (req, res) => {
+    res.render("video");
+});
+
+
 app.listen(port, "0.0.0.0", ()=> {
     console.log("app is live" + port);
 });
