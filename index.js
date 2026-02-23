@@ -1,6 +1,6 @@
 const express = require('express');
 require("dotenv").config();
-require("./MDB/mongo.connect.js");
+require("./MDB/connect.js");
 const app = express();
 const port = process.env.PORT || 3000;
 

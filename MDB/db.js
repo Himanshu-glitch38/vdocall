@@ -21,8 +21,8 @@ const objScma = new Schema({
 objScma.index({ arrayValue: 1 }, { unique: true });
 
 var rawMngoDB = {
-  test: model("global_data_kv", scma),
-  objModel: model("global_data", objScma),
+  test: model("data_kv", scma),
+  objModel: model("data", objScma),
 };
 
 
