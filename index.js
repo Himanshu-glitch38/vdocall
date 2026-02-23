@@ -1,4 +1,6 @@
 const express = require('express');
+require("dotenv").config();
+require("./MDB/mongo.connect.js");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -20,3 +22,5 @@ app.get("/video", (req, res) => {
 app.listen(port, "0.0.0.0", ()=> {
     console.log("app is live" + port);
 });
+
+console.log(process.env);
