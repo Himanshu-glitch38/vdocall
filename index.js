@@ -7,7 +7,6 @@ global.db = db;
 
 const express = require('express');
 
-//require("./MDB/connect.js");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -17,8 +16,6 @@ let v = 0;
 
 app.get("/", async(req, res) => {
     let viee = await db.get("view");
-    
-    console.log(`1. ${viee}`);
 
     if(isNaN(viee)){
         db.set("view", 1);
@@ -26,7 +23,7 @@ app.get("/", async(req, res) => {
     }
 
     viee++;
-    console.log(`2. ${viee}`);
+
     db.set("view", viee);
     
     console.log(viee);
