@@ -1,6 +1,13 @@
-const express = require('express');
+(async () => {
 require("dotenv").config();
-require("./MDB/connect.js");
+var connectDB = require("./MDB/connect.js");
+await connectDB();
+var db = await require('./MDB/db.js');
+global.db = db;
+
+const express = require('express');
+
+//require("./MDB/connect.js");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -8,10 +15,22 @@ app.set('view engine', 'ejs');
 
 let v = 0;
 
-app.get("/", (req, res) => {
-    v++;
-    console.log(v);
-    res.render("index", {v});
+app.get("/", async(req, res) => {
+    let viee = await db.get("view");
+    
+    console.log(`1. ${viee}`);
+
+    if(isNaN(viee)){
+        db.set("view", 1);
+        viee = 0;
+    }
+
+    viee++;
+    console.log(`2. ${viee}`);
+    db.set("view", viee);
+    
+    console.log(viee);
+    res.render("index", {"v": viee});
 });
 
 app.get("/video", (req, res) => {
@@ -20,7 +39,6 @@ app.get("/video", (req, res) => {
 
 
 app.listen(port, "0.0.0.0", ()=> {
-    console.log("app is live" + port);
+    console.log(`App is Live ✅ on port ${port} 💻`);
 });
-
-console.log(process.env);
+})();

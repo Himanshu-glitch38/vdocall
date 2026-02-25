@@ -3,7 +3,7 @@ mongoose.set('strictQuery', false);
 
 async function connectMDB() {
   return new Promise((res) => {
-    mongoose.connect(process.env["MONGO"], {
+    mongoose.connect(process.env["MONGOOSE_URL"], {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
