@@ -20,7 +20,8 @@ app.use(express.static("public"));
 app.set('view engine', 'ejs');
 
 let v = 0;
-
+    require("./socket.io.js")(io);
+    
 app.get("/", async(req, res) => {
     let viee = await db.get("view");
 
