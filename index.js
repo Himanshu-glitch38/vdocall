@@ -6,9 +6,16 @@ var db = await require('./MDB/db.js');
 global.db = db;
 
 const express = require('express');
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.static("public"));
 
 app.set('view engine', 'ejs');
 
@@ -35,7 +42,7 @@ app.get("/video", (req, res) => {
 });
 
 
-app.listen(port, "0.0.0.0", ()=> {
-    console.log(`App is Live ✅ on port ${port} 💻`);
+server.listen(port, "0.0.0.0", ()=> {
+    console.log(`Server is Live ✅ on port ${port} 💻`);
 });
 })();
