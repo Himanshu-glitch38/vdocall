@@ -1,3 +1,55 @@
+<script src="/socket.io/socket.io.js"></script>
+
 <h1>Hello</h1>
 
 <p>Number of visits: <%= v %></p>
+
+<h1>
+    Socket Info
+</h1>
+
+<p id="sockInfo">
+    { <br>
+        "Socket ID": "Waiting for connection", <br><br>
+        "Status": "Not Connected 🔴",
+        <br><br>
+        "Last Updated": "<span id="lastupdtime">${lastupdtime}</span> Sec ago", <br><br>
+        "Connected User Count": <span id="userCount">-1</span>
+         
+        
+        <br>}
+</p>
+<script>
+    sockInfo = document.getElementById("sockInfo");
+
+const socket = io();
+     console.log(socket);
+
+     let lastupdtime = Date.now();
+     let userCount = document.getElementById("userCount");
+
+     socket.emit("getUserCount", (count) => {
+        userCount.innerHTML = count;
+     });
+
+     setInterval(() => {
+        lastupdtime = Date.now();
+
+        sockInfo.innerHTML = `
+        { <br>
+        "Socket ID": ${socket.id}, <br><br>
+        "Status": ${socket.connected? "\"Connected 🟢\"" : "\"Not Connected 🔴\""},
+        <br><br>
+        "Last Updated": "<span id="lastupdtime">${lastupdtime}</span> Sec ago", <br><br>
+        "Connected User Count": <span id="userCount">$</span>
+         
+        
+        <br>}
+        `;
+        socket.emit("getUserCount", count => document.getElementById("userCount").textContent = count);
+     }, 5000);
+
+     setInterval(() => {
+        document.getElementById("lastupdtime").innerHTML = ((Date.now() - lastupdtime) / 1000).toFixed(1);
+     }, 200);
+</script>
