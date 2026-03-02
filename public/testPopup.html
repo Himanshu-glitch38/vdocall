@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Permission Required</title>
+
+<style>
+  body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    font-family:system-ui, sans-serif;
+  }
+
+  /* Glass Popup */
+  .glass-popup{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(12px);
+    background:rgba(0,0,0,0.45);
+    opacity:0;
+    pointer-events:none;
+    transition:0.3s ease;
+  }
+
+  .glass-popup.active{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .glass-card{
+    width:90%;
+    max-width:380px;
+    padding:26px;
+    border-radius:22px;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    backdrop-filter:blur(22px);
+    box-shadow:0 10px 40px rgba(0,0,0,0.35);
+    text-align:center;
+    color:#fff;
+    animation:scaleIn 0.3s ease;
+  }
+
+  @keyframes scaleIn{
+    from{transform:scale(0.85);opacity:0;}
+    to{transform:scale(1);opacity:1;}
+  }
+
+  .glass-card h2{
+    margin-bottom:12px;
+    font-size:22px;
+    letter-spacing:0.4px;
+  }
+
+  .glass-card p{
+    font-size:15px;
+    opacity:0.9;
+    margin-bottom:14px;
+    line-height:1.5;
+  }
+
+  .instruction{
+    font-size:13px;
+    opacity:0.7;
+    margin-bottom:22px;
+  }
+
+  .btn{
+    padding:12px 22px;
+    border:none;
+    border-radius:14px;
+    font-size:15px;
+    cursor:pointer;
+    color:#fff;
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+    box-shadow:0 4px 18px rgba(0,114,255,0.55);
+    transition:0.25s ease;
+  }
+
+  .btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 22px rgba(0,114,255,0.7);
+  }
+
+  @media(max-width:480px){
+    .glass-card{
+      padding:22px;
+      border-radius:20px;
+    }
+    .glass-card h2{
+      font-size:20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="permissionPopup" class="glass-popup">
+  <div class="glass-card">
+    <h2>Camera & Microphone Permission Required</h2>
+    <p>
+      This website needs access to your camera and microphone to start the video chat.
+      Please grant permission to continue.
+    </p>
+    <div class="instruction">
+      If you previously blocked permission, click the 🔒 lock icon in the address bar → Site Settings → Allow Camera & Microphone.
+    </div>
+    <button class="btn" id="grantBtn">Grant Permission</button>
+  </div>
+</div>
+
+<script>
+const popup = document.getElementById("permissionPopup");
+const grantBtn = document.getElementById("grantBtn");
+
+async function requestMedia(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:true,
+      audio:true
+    });
+    popup.classList.remove("active");
+    console.log("Permission Granted", stream);
+  }catch(err){
+    popup.classList.add("active");
+    console.log("Permission Denied", err);
+  }
+}
+
+// First attempt on load
+requestMedia();
+
+// Retry on button click
+grantBtn.addEventListener("click", async ()=>{
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:true,
+      audio:true
+    });
+    popup.classList.remove("active");
+  }catch(err){
+    alert("Please enable Camera & Microphone permission from your browser settings.");
+  }
+});
+</script>
+
+</body>
+</html>
