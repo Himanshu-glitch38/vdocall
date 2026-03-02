@@ -24,7 +24,8 @@ module.exports = (io) => {
       waitingQueue.push(socket.id);
       socket.emit("waiting");
       }
-      
+
+      // 
       socket.on('disconnect', () => {
         users--;
         console.log("User disconnected", socket.id);
@@ -37,11 +38,24 @@ module.exports = (io) => {
       }  
       });
 
+      //sample
       socket.on("getUserCount", (feedback) => {
         feedback(users);
       })
 
-console.log(io.sockets.sockets)
+        console.log(io.sockets.sockets)
         console.log('someone connected!', socket.id);
+
+      // Handle Skip
+    socket.on("next", () => {
+      if (socket.partner) {
+        io.to(socket.partner).emit("partner-disconnected");
+      }
+      socket.partner = null;
+
+      waitingQueue.push(socket.id);
+      socket.emit("waiting");
+    });
+      
       });
 };
