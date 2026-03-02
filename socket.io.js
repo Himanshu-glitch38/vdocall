@@ -23,6 +23,7 @@ module.exports = (io) => {
     } else {
       waitingQueue.push(socket.id);
       socket.emit("waiting");
+        console.log(waitingQueue);
       }
 
       // 
