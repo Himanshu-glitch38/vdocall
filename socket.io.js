@@ -4,16 +4,24 @@ module.exports = (io) => {
   // console.log(io);
     io.on('connection', (socket) => {
       users++;
+      
       if (waitingQueue.length > 0) {
-      const partner = waitingQueue.shift();
+      const partnerId = waitingQueue.shift();
+      const partnerSocket = io.sockets.sockets.get(partnerId);
 
-      //socket.partner = partner.id;
-      //partner.partner = socket.id;
+      if (partnerSocket) {
+        socket.partner = partnerId;
+        partnerSocket.partner = socket.id;
 
-      //socket.emit("matched", partner.id);
-      //partner.emit("matched", socket.id);
+        socket.emit("matched", partnerId);
+        partnerSocket.emit("matched", socket.id);
+      } else {
+        // If partner disconnected before match
+        waitingQueue.push(socket.id);
+        socket.emit("waiting");
+      }
     } else {
-      waitingQueue.push(socket);
+      waitingQueue.push(socket.id);
       socket.emit("waiting");
       }
       
