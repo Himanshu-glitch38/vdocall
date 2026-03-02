@@ -10,28 +10,46 @@ function initSocket(server) {
 
     // Matchmaking
     if (waitingQueue.length > 0) {
-      const partner = waitingQueue.shift();
+      const partnerId = waitingQueue.shift();
+      const partnerSocket = io.sockets.sockets.get(partnerId);
 
-      socket.partner = partner.id;
-      partner.partner = socket.id;
+      if (partnerSocket) {
+        socket.partner = partnerId;
+        partnerSocket.partner = socket.id;
 
-      socket.emit("matched", partner.id);
-      partner.emit("matched", socket.id);
+        socket.emit("matched", partnerId);
+        partnerSocket.emit("matched", socket.id);
+      } else {
+        // If partner disconnected before match
+        waitingQueue.push(socket.id);
+        socket.emit("waiting");
+      }
     } else {
-      waitingQueue.push(socket);
+      waitingQueue.push(socket.id);
       socket.emit("waiting");
     }
 
-    // Relay WebRTC signals
+    // Relay WebRTC signaling
     socket.on("signal", ({ to, data }) => {
       io.to(to).emit("signal", { from: socket.id, data });
+    });
+
+    // Handle Next / Skip
+    socket.on("next", () => {
+      if (socket.partner) {
+        io.to(socket.partner).emit("partner-disconnected");
+      }
+      socket.partner = null;
+
+      waitingQueue.push(socket.id);
+      socket.emit("waiting");
     });
 
     socket.on("disconnect", () => {
       console.log("Disconnected:", socket.id);
 
       // Remove from queue if waiting
-      waitingQueue = waitingQueue.filter(s => s.id !== socket.id);
+      waitingQueue = waitingQueue.filter(id => id !== socket.id);
 
       // Notify partner
       if (socket.partner) {
