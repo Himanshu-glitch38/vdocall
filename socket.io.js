@@ -56,6 +56,13 @@ module.exports = (io) => {
       waitingQueue.push(socket.id);
       socket.emit("waiting");
     });
+
+      // Relay WebRTC signaling
+    socket.on("signal", ({ to, data }) => {
+      io.to(to).emit("signal", { from: socket.id, data });
+    });
+
+      
       
       });
 };
