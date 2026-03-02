@@ -27,8 +27,14 @@ module.exports = (io) => {
       
       socket.on('disconnect', () => {
         users--;
-        waitingQueue = waitingQueue.filter(s => s.id !== socket.id);
+        console.log("User disconnected", socket.id);
         
+        waitingQueue = waitingQueue.filter(id => id !== socket.id);
+
+      // Notify partner
+      if (socket.partner) {
+        io.to(socket.partner).emit("partner-disconnected");
+      }  
       });
 
       socket.on("getUserCount", (feedback) => {
