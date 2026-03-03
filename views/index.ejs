@@ -39,6 +39,7 @@ async function initMedia() {
     // localVideo.srcObject = localStream;
 
   } catch (err) {
+  socket.disconnect();
     alert("Camera and microphone permission required.");
     console.error(err);
   }

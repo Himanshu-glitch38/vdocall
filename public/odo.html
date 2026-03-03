@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Odometer</title>
+
+  <!-- Odometer CSS -->
+  <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/themes/odometer-theme-default.min.css"/>
+
+  <!-- Odometer JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/odometer.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f5f5f5; /* simple light background */
+      font-family: Arial, sans-serif;
+    }
+
+    .odometer {
+      font-size: 60px;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="counter" class="odometer">0</div>
+
+  <script>
+    window.odometerOptions = {
+      duration: 2500,
+      format: '(,ddd)'
+    };
+
+    // Start animation
+    setInterval(() => {
+      document.getElementById("counter")
+        .innerHTML = Math.floor(Math.random() * (1800 - 1400 + 1)) + 1400;
+
+    }, 2000);
+
+  </script>
+
+</body>
+</html>
