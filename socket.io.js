@@ -87,5 +87,14 @@ module.exports = (io) => {
 
       
       
+
+    //beta message
+
+    socket.on('message', (msg, feedback) => {
+      if(!socket.partner) return feedback("No partner found!")
+        if(!msg) return feedback("Please enter a valid message!")
+        io.to(socket.partner).emit('message', msg);
+      return feedback(true);
+    });
       });
 };
