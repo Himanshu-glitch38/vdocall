@@ -1,4 +1,4 @@
-setTimeout(() =>{
+//setTimeout(() =>{
 
 const socket = io();
 let isInitiator = false;
@@ -165,4 +165,4 @@ socket.on("matched", async (partnerId) => {
 
   
 
-}, 12000);
+//}, 12000);
