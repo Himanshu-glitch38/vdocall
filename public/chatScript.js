@@ -168,7 +168,7 @@ if (startBtn) {
 
 // Mute Button Logic
 const muteBtn = document.getElementById('muteBtn');
-if (muteBtn) {
+/*????if (muteBtn) {
     muteBtn.addEventListener('click', () => {
         if (localStream) {
             const audioTrack = localStream.getAudioTracks()[0];
@@ -181,10 +181,10 @@ if (muteBtn) {
             }
         }
     });
-}
+}*/
 
 // Stop Button
-const stopChatBtn = document.getElementById('stopChat');
+/*?????const stopChatBtn = document.getElementById('stopChat');
 if (stopChatBtn) {
     stopChatBtn.addEventListener('click', () => {
         clearPendingReplies();
@@ -193,7 +193,7 @@ if (stopChatBtn) {
         }
         window.location.href = 'index.html';
     });
-}
+}*/
 
 // Chat Functionality
 const chatInput = document.getElementById('chat-msg');
