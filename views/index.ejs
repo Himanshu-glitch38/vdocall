@@ -3,7 +3,7 @@
 <h1>Index</h1>
 <p>IS socket connected? :: <span id="issocketconnected">No</span></p>
 
-<video id="localVideo" autoplay muted playsinline style="height: 30vh;"></video>
+<video id="localVideo" autoplay playsinline style="height: 30vh;"></video>
 
 <video id="remoteVideo" autoplay playsinline style="height: 60vh;"></video>
 
@@ -36,7 +36,7 @@ async function initMedia() {
       audio: true
     });
     localVideo.style.transform = "scaleX(-1)";
-    localVideo.srcObject = localStream;
+    // localVideo.srcObject = localStream;
 
   } catch (err) {
     alert("Camera and microphone permission required.");
@@ -133,7 +133,8 @@ function createPeer() {
   });
 
   PC.ontrack = (event) => {
-    remoteVideo.srcObject = event.streams[0];
+    logger.log("track received from partner")
+    localVideo.srcObject = event.streams[0];
   };
 
   localStream.getTracks().forEach(track => {
@@ -178,6 +179,7 @@ function cleanupPeer() {
   }
 
   remoteVideo.srcObject = null;
+  logger.debug("vid src cleared")
   isInitiator = false;
 }
 
