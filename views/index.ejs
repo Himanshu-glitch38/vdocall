@@ -1,55 +1,65 @@
 <script src="/socket.io/socket.io.js"></script>
 
-<h1>Hello</h1>
+<h1>Index</h1>
+<p>IS socket connected? :: <span id="issocketconnected">No</span></p>
 
-<p>Number of visits: <%= v %></p>
-
-<h1>
-    Socket Info
-</h1>
-
-<p id="sockInfo">
-    { <br>
-        "Socket ID": "Waiting for connection", <br><br>
-        "Status": "Not Connected 🔴",
-        <br><br>
-        "Last Updated": "<span id="lastupdtime">${lastupdtime}</span> Sec ago", <br><br>
-        "Connected User Count": <span id="userCount">-1</span>
-         
-        
-        <br>}
+<h1>Console:</h1>
+<p id="bConsole" style="background-color: black; padding: 10px; font-size: 12px; font-family: monospace; font-weight: bold; border-radius: 5px;">
 </p>
+
 <script>
-    sockInfo = document.getElementById("sockInfo");
-
 const socket = io();
-     console.log(socket);
+let socketConnectionText = document.querySelector("#issocketconnected");
+let bConsole = document.querySelector("#bConsole");
 
-     let lastupdtime = Date.now();
-     let userCount = document.getElementById("userCount");
 
-     socket.emit("getUserCount", (count) => {
-        userCount.innerHTML = count;
-     });
+let logger = {
+    log(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: gray;'>" + message + "</span> <br> <br>";
+    },
+    error(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: red;'>" + message + "</span> <br> <br>";
+    },
+    warn(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: orange;'>" + message + "</span> <br> <br>";
+    },
+    success(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: lime;'>" + message + "</span> <br> <br>";
+    },
+    info(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: cyan;'>" + message + "</span> <br> <br>";
+    },
+    debug(message) {
+        bConsole.innerHTML += "<span style='color: gray; font-size: 8px;'>"+(new Date()).toLocaleTimeString() + "|  </span>  " + "<span style='color: yellow;'>" + message + "</span> <br> <br>";
+    }
+};
 
-     setInterval(() => {
-        lastupdtime = Date.now();
+socket.on('connect', () => {
+  console.log('Successfully connected to the server with ID:', socket.id);
+  socketConnectionText.innerHTML = "Yes";
+ logger.success("Successfully connected to the server with ID: " + socket.id);
+});
 
-        sockInfo.innerHTML = `
-        { <br>
-        "Socket ID": ${socket.id}, <br><br>
-        "Status": ${socket.connected? "\"Connected 🟢\"" : "\"Not Connected 🔴\""},
-        <br><br>
-        "Last Updated": "<span id="lastupdtime">${lastupdtime}</span> Sec ago", <br><br>
-        "Connected User Count": <span id="userCount">$</span>
-         
-        
-        <br>}
-        `;
-        socket.emit("getUserCount", count => document.getElementById("userCount").textContent = count);
-     }, 5000);
+socket.on('disconnect', () => {
+  console.log('Disconnected from the server');
+  socketConnectionText.innerHTML = "No";
+  logger.error("Disconnected from the server");
+});
 
-     setInterval(() => {
-        document.getElementById("lastupdtime").innerHTML = ((Date.now() - lastupdtime) / 1000).toFixed(1);
-     }, 200);
+socket.on("waiting", () => {
+  logger.info("Waiting for a partner...");
+});
+
+socket.on("partner-disconnected", () => {
+  logger.warn("your Partner disconnected");
+});
+
+socket.on("matched", (partnerId) => {
+  logger.success("Matched with partner with ID: " + partnerId);
+
+  logger.debug(`${socket.id} (you) 🤝 ${partnerId} (stranger)`);
+});
+
+
+
 </script>

@@ -23,7 +23,11 @@ app.set('view engine', 'ejs');
 let v = 0;
     require("./socket.io.js")(io);
     
-app.get("/", async(req, res) => {
+
+    app.get("/", async(req, res) => {
+        res.render("index");
+    });
+app.get("/stat", async(req, res) => {
     let viee = await db.get("view");
 
     if(isNaN(viee)){
@@ -36,7 +40,7 @@ app.get("/", async(req, res) => {
     db.set("view", viee);
     
     console.log(viee);
-    res.render("index", {"v": viee});
+    res.render("stat", {"v": viee});
 });
 
 app.get("/video", (req, res) => {
