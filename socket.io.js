@@ -81,8 +81,11 @@ module.exports = (io) => {
     });
 
       // Relay WebRTC signaling
-    socket.on("signal", ({ to, data }) => {
-      io.to(to).emit("signal", { from: socket.id, data });
+    socket.on("signal", ({ data }) => {
+      console.log("got a signal from somone...")
+      console.log(data);
+      if(!socket.partner) return console.log("partenr nor foingD");
+      io.to(socket.partner).emit("signal", { data });
     });
 
       

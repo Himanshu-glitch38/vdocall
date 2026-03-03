@@ -3,10 +3,9 @@
 <h1>Index</h1>
 <p>IS socket connected? :: <span id="issocketconnected">No</span></p>
 
-<!-- <video id="localVideo"></video> -->
 <video id="localVideo" autoplay muted playsinline style="height: 30vh;"></video>
 
-<video id="remoteVideo" autoplay muted playsinline style="height: 60vh;"></video>
+<video id="remoteVideo" autoplay playsinline style="height: 60vh;"></video>
 
 <h1>Console:</h1>
 <p id="bConsole" style="background-color: black; padding: 10px; font-size: 12px; font-family: monospace; font-weight: bold; border-radius: 5px;">
@@ -15,6 +14,7 @@
 <input id="txt" style="border: 4px solid gray; width: 80%; height: 30px; border-radius: 12px; margin: 4px; padding: 2px;" /> <br> <button style="width: 90px; height: 20px; border-radius: 5px; font-size: 12px;" id="sendBtn">send</button>
 <script>
 const socket = io();
+let isInitiator = false;
 let PC;
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
@@ -38,9 +38,6 @@ async function initMedia() {
     localVideo.style.transform = "scaleX(-1)";
     localVideo.srcObject = localStream;
 
-    setInterval(() => {
-      console.log(localStream);
-    }, 5000)
   } catch (err) {
     alert("Camera and microphone permission required.");
     console.error(err);
@@ -48,9 +45,10 @@ async function initMedia() {
 }
 initMedia();
 
+/*
 function createPeer() {
   if (PC) return; // prevent duplicate
-
+ logger.log("creating new peer")
   PC = new RTCPeerConnection({
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
@@ -63,14 +61,30 @@ function createPeer() {
 
   // on remote video stream receive
   PC.ontrack = (event) => {
+    console.log(event.streams[0])
     remoteVideo.srcObject = event.streams[0];
   };
 
 
   // Add local tracks
+  if (!localStream) {
+  logger.error("Local media not ready yet");
+  return;
+}
   localStream.getTracks().forEach(track => {
     PC.addTrack(track, localStream);
   });
+
+
+   // ICE candidates
+   PC.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit("signal", {
+        data: { candidate: event.candidate }
+      });
+    }
+  };
+
 
    // Connection state monitoring
    PC.onconnectionstatechange = () => {
@@ -82,8 +96,92 @@ function createPeer() {
       cleanupPeer();
     }
   };
+
+  //.
+  if (isInitiator) {
+    PC.createOffer()
+      .then(offer => PC.setLocalDescription(offer))
+      .then(() => {
+        socket.emit("signal", {
+          data: { sdp: PC.localDescription }
+        });
+      })
+      .catch(console.error);
+  }
+
   
 }
+*/
+function createPeer() {
+  if (PC) return;
+
+  if (!localStream) {
+    logger.error("Local media not ready");
+    return;
+  }
+
+  logger.log("Creating new peer");
+
+  PC = new RTCPeerConnection({
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun3.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:19302" }
+    ]
+  });
+
+  PC.ontrack = (event) => {
+    remoteVideo.srcObject = event.streams[0];
+  };
+
+  localStream.getTracks().forEach(track => {
+    PC.addTrack(track, localStream);
+  });
+
+  PC.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit("signal", {
+        data: { candidate: event.candidate }
+      });
+    }
+  };
+
+  PC.onconnectionstatechange = () => {
+    if (
+      PC.connectionState === "disconnected" ||
+      PC.connectionState === "failed" ||
+      PC.connectionState === "closed"
+    ) {
+      cleanupPeer();
+    }
+  };
+
+  if (isInitiator) {
+    PC.createOffer()
+      .then(offer => PC.setLocalDescription(offer))
+      .then(() => {
+        socket.emit("signal", {
+          data: { sdp: PC.localDescription }
+        });
+      })
+      .catch(console.error);
+  }
+}
+
+//..
+function cleanupPeer() {
+  if (PC) {
+    PC.close();
+    PC = null;
+  }
+
+  remoteVideo.srcObject = null;
+  isInitiator = false;
+}
+
+
 
 sendBtn.addEventListener("click", () => {
   let txtinp = inp.value.trim();
@@ -144,6 +242,7 @@ socket.on('connect', () => {
 
 socket.on('disconnect', () => {
   partner = null;
+  cleanupPeer();
   console.log('Disconnected from the server');
   socketConnectionText.innerHTML = "No";
   logger.error("Disconnected from the server");
@@ -156,17 +255,52 @@ socket.on("waiting", () => {
 
 socket.on("partner-disconnected", () => {
   partner = null;
+  cleanupPeer();
   logger.warn("your Partner disconnected");
 });
 
 socket.on("matched", (partnerId) => {
   partner = partnerId;
+  // simple rule: lower socket id becomes initiator
+  isInitiator = socket.id < partnerId;
+  logger.log(`Is ini: ${isInitiator}`);
+
   logger.success("Matched with partner with ID: " + partnerId);
 
   logger.debug(`${socket.id} (you) 🤝 ${partnerId} (stranger)`);
+
+  createPeer();
 });
 
+socket.on("signal", async ({ data }) => {
+  if (!PC) {
+    // isInitiator = false;
+    // partnerId = from;
+    createPeer();
+  }
 
+  try {
+    if (data.sdp) {
+      await PC.setRemoteDescription(new RTCSessionDescription(data.sdp));
+
+      if (data.sdp.type === "offer") {
+        const answer = await PC.createAnswer();
+        await PC.setLocalDescription(answer);
+
+        logger.log("signal test #1 success")
+        socket.emit("signal", {
+          data: { sdp: answer }
+        });
+      }
+    }
+
+    if (data.candidate) {
+      await PC.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+  } catch (err) {
+    console.error("Signal error:", err);
+  }
+});
 
 
  // Add local tracks
