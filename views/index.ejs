@@ -261,7 +261,7 @@ socket.on("partner-disconnected", () => {
   logger.warn("your Partner disconnected");
 });
 
-socket.on("matched", (partnerId) => {
+/*socket.on("matched", (partnerId) => {
   partner = partnerId;
   // simple rule: lower socket id becomes initiator
   isInitiator = socket.id < partnerId;
@@ -272,6 +272,22 @@ socket.on("matched", (partnerId) => {
   logger.debug(`${socket.id} (you) 🤝 ${partnerId} (stranger)`);
 
   createPeer();
+});*/
+
+socket.on("matched", async (partnerId) => {
+  partner = partnerId;
+  logger.success("Matched with partner with ID: " + partnerId);
+
+  isInitiator = socket.id < partnerId;
+
+  if (!localStream) {
+logger.warn("Media is not ready.. Initiating now");
+    await initMedia();
+  }
+
+  createPeer();
+logger.log("peer created");
+
 });
 
 socket.on("signal", async ({ data }) => {
