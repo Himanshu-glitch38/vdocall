@@ -375,6 +375,7 @@ h1 { font-size: 3.5rem; line-height: 1.2; margin: 20px 0; background: linear-gra
 .control-btn-shot {
     background: #a55eea;
     box-shadow: 0 10px 20px rgba(165, 94, 234, 0.3);
+    /* hidden */  display: none;
 }
 
 .control-btn-full {
@@ -396,6 +397,7 @@ h1 { font-size: 3.5rem; line-height: 1.2; margin: 20px 0; background: linear-gra
     border: none; padding: 5px 12px; border-radius: 5px;
     cursor: pointer; font-size: 0.8rem; font-weight: bold;
     opacity: 0; transition: opacity 0.3s ease; z-index: 10;
+    /* hidden */ display: none;
 }
 .video-wrapper:hover .report-btn { opacity: 1; }
 
