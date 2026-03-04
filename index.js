@@ -32,6 +32,13 @@ const express = require('express'),
         res.render("vidChat");
     });
 
+    app.get('/stat/getActiveUserCount', async(req, res) => {
+        res.json({
+            current: currentActiveUsers,
+        });
+    });
+
+    
     /*
 app.get("/stat", async(req, res) => {
     let viee = await db.get("view");

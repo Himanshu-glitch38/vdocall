@@ -1,13 +1,17 @@
 ﻿// Online Counter Logic 
 const counterElement = document.getElementById('counter');
-let currentOnline = 30447;
+let currentOnline = 0;
 
 function updateCounter() {
     if (!counterElement) return;
 
     // Thoda realistic badlav (+ ya - 5)
-    const change = Math.floor(Math.random() * 11) - 5;
-    currentOnline += change;
+    // const change = Math.floor(Math.random() * 11) - 5;
+    // currentOnline += change;
+
+    fetch('/stat/getActiveUserCount').then(res => res.json()).then(data => {
+        currentOnline = data.current;
+    }).catch(console.log);
 
     // Number format (1,234 style)
     counterElement.textContent = currentOnline.toLocaleString();
