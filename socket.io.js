@@ -1,10 +1,10 @@
 module.exports = (io) => {
   let waitingQueue = [];
-  
-    io.on('connection', (socket) => {
-      currentActiveUsers++;
-      
-      if (waitingQueue.length > 0) {
+
+  io.on("connection", (socket) => {
+    currentActiveUsers++;
+
+    if (waitingQueue.length > 0) {
       const partnerId = waitingQueue.shift();
       const partnerSocket = io.sockets.sockets.get(partnerId);
 
@@ -17,62 +17,63 @@ module.exports = (io) => {
         console.log(`matched: ${partnerId ?? null} 🤝 ${socket.id ?? null}`);
       } else {
         // If partner disconnected before match
-        if(!socket.id) return;
+        if (!socket.id) return;
         waitingQueue.push(socket.id);
         socket.emit("waiting");
       }
     } else {
-      if(!socket.id) return;
+      if (!socket.id) return;
       waitingQueue.push(socket.id);
       socket.emit("waiting");
-        console.log(waitingQueue);
-      }
+      console.log(waitingQueue);
+    }
 
-      // 
-      socket.on('disconnect', () => {
-        currentActiveUsers--;
-        console.log("User disconnected", socket.id);
-        
-        waitingQueue = waitingQueue.filter(id => id !== socket.id);
+    //
+    socket.on("disconnect", () => {
+      currentActiveUsers--;
+      console.log("User disconnected", socket.id);
+
+      waitingQueue = waitingQueue.filter((id) => id !== socket.id);
 
       // Notify partner
       if (socket.partner) {
         io.to(socket.partner).emit("partner-disconnected");
-        
 
-    /** */    if(waitingQueue.length > 0) {
+        /** */ if (waitingQueue.length > 0) {
           const partnerId = waitingQueue.shift();
           const partnerSocket = io.sockets.sockets.get(partnerId);
           const oldPartnerId = socket.partner;
           const oldPartnerSocket = io.sockets.sockets.get(oldPartnerId);
 
-
           if (partnerSocket && oldPartnerSocket) {
-                oldPartnerSocket.partner = partnerId;
+            oldPartnerSocket.partner = partnerId;
             partnerSocket.partner = oldPartnerId;
             oldPartnerSocket.emit("matched", partnerId);
-            
+
             partnerSocket.emit("matched", oldPartnerId);
             console.log(`matched: ${partnerId} 🤝 ${oldPartnerId} (old)`);
-
+          }
+        } else {
+          if (io.sockets.sockets.get(socket.partner)) {
+            waitingQueue.push(socket.partner);
+            io.to(socket.partner).emit("waiting");
+          } else {
+            return;
+          }
         }
       } else {
-        if(io.sockets.sockets.get(socket.partner)){
-        waitingQueue.push(socket.partner);
-        io.to(socket.partner).emit("waiting");
-        } else { return; }
+        return;
       }
-    } else { return; }
-  });
+    });
 
-      // //sample
-      // socket.on("getUserCount", (feedback) => {
-      //   feedback(users);
-      // });
+    // //sample
+    // socket.on("getUserCount", (feedback) => {
+    //   feedback(users);
+    // });
 
-        console.log('someone connected!', socket.id);
+    console.log("someone connected!", socket.id);
 
-      // Handle Skip
+    // Handle Skip
     socket.on("next", () => {
       if (socket.partner) {
         io.to(socket.partner).emit("partner-disconnected");
@@ -83,9 +84,9 @@ module.exports = (io) => {
       socket.emit("waiting");
     });
 
-      // Relay WebRTC signaling
+    // Relay WebRTC signaling
     socket.on("signal", ({ data }) => {
-      if(!socket.partner) return console.log("partenr nor foingD");
+      if (!socket.partner) return console.log("partenr nor foingD");
       io.to(socket.partner).emit("signal", { data });
     });
 
@@ -97,5 +98,5 @@ module.exports = (io) => {
     //     io.to(socket.partner).emit('message', msg);
     //   return feedback(true);
     // });
-      });
+  });
 };
