@@ -20,13 +20,13 @@ function updateCounter() {
     .then((res) => res.json())
     .then((data) => {
       currentOnline = data.current;
+      counterElement.textContent = currentOnline.toLocaleString();
     })
     .catch(console.log);
-
-  counterElement.textContent = currentOnline.toLocaleString();
 }
 
 if (counterElement) {
+  updateCounter();
   setInterval(updateCounter, 3000);
 }
 
@@ -159,6 +159,27 @@ window.addEventListener("resize", () => {
 // 18+ Confirmation Logic
 const ageCheckbox = document.getElementById("age-confirm");
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage) {
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      const jsonUserData = JSON.parse(atob(userData));
+      if (jsonUserData.isGT18) {
+        ageCheckbox.checked = true;
+      }
+      if (jsonUserData.gender === "female") {
+        document.querySelector(
+          'input[name="gender"][value="female"]'
+        ).checked = true;
+      } else {
+        document.querySelector(
+          'input[name="gender"][value="male"]'
+        ).checked = true;
+      }
+    }
+  }
+});
+
 if (startBtn) {
   startBtn.addEventListener("click", () => {
     if (ageCheckbox && !ageCheckbox.checked) {
@@ -167,14 +188,22 @@ if (startBtn) {
       return;
     }
 
-    if (loadingSpinner) loadingSpinner.style.display = "block";
+    if (document.getElementById("loading-spinner"))
+      document.getElementById("loading-spinner").style.display = "block";
     startBtn.style.display = "none";
 
     const selectedGender = document.querySelector(
       'input[name="gender"]:checked'
     );
     const gender = selectedGender ? selectedGender.value : "male";
-    window.location.href = `chat.html?gender=${encodeURIComponent(gender)}`;
+    let jsonUserData = {
+      gender: gender,
+      lastUpdated: Date.now(),
+      isGT18: true,
+    };
+
+    localStorage.setItem("userData", btoa(JSON.stringify(jsonUserData)));
+    window.location.href = `chat?gender=${encodeURIComponent(gender)}`;
   });
 }
 
