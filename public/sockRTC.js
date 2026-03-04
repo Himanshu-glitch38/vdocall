@@ -1,5 +1,3 @@
-//setTimeout(() =>{
-
 const socket = io();
 let isInitiator = false;
 let PC;
@@ -20,6 +18,7 @@ async function initMedia() {
       console.error(err);
     }
   }
+  
   initMedia();
 
   function createPeer() {
@@ -161,8 +160,3 @@ socket.on("matched", async (partnerId) => {
       console.error("Signal error:", err);
     }
   });
-  
-
-  
-
-//}, 12000);
