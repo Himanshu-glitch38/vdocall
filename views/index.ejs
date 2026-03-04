@@ -13,7 +13,7 @@
 <br>
 <input id="txt" style="border: 4px solid gray; width: 80%; height: 30px; border-radius: 12px; margin: 4px; padding: 2px;" /> <br> <button style="width: 90px; height: 20px; border-radius: 5px; font-size: 12px;" id="sendBtn">send</button>
 <script>
-const socket = io();
+const socket = {}; ///io();
 let isInitiator = false;
 let PC;
 const localVideo = document.getElementById("localVideo");

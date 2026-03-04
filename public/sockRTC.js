@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io({ autoConnect: false });
 let isInitiator = false;
 let PC;
 const localVideo = document.getElementById("localVideo");
@@ -12,8 +12,11 @@ async function initMedia() {
         video: true,
         audio: true
       });
+
+      localVideo.srcObject = localStream;
+      socket.connect();
     } catch (err) {
-    socket.disconnect();
+    // socket.disconnect();
       alert("Camera and microphone permission required.");
       console.error(err);
     }
@@ -28,7 +31,6 @@ async function initMedia() {
     alert("Local media not ready");
       return;
     }
-    localVideo.srcObject = localStream;
     // logger.log("Creating new peer");
   
     PC = new RTCPeerConnection({

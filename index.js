@@ -1,32 +1,38 @@
 (async () => {
-require("dotenv").config();
+/** db ki jarurat nahi hai abhi..
+    require("dotenv").config();
 var connectDB = require("./MDB/connect.js");
 await connectDB();
 var db = await require('./MDB/db.js');
 global.db = db;
+*/
 
-const express = require('express');
-const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
-    
-const app = express();
-const port = process.env.PORT || 3000;
+const express = require('express'),
+    http = require("http"),
+    { Server } = require("socket.io"),
+    path = require("path"),
+    app = express(),
+    port = process.env.PORT || 3000,
+    server = http.createServer(app),
+    io = new Server(server);
 
-const server = http.createServer(app);
-const io = new Server(server);
+    // public folder setup
+    app.use(express.static(path.join(__dirname, "public")));
+    app.set('view engine', 'ejs');
 
-app.use(express.static(path.join(__dirname, "public")));
-
-app.set('view engine', 'ejs');
-
-let v = 0;
+    global.currentActiveUsers = 0;
     require("./socket.io.js")(io);
     
 
     app.get("/", async(req, res) => {
         res.render("index");
     });
+
+    app.get("/chat", async(req, res) => {
+        res.render("vidChat");
+    });
+
+    /*
 app.get("/stat", async(req, res) => {
     let viee = await db.get("view");
 
@@ -45,7 +51,7 @@ app.get("/stat", async(req, res) => {
 
 app.get("/video", (req, res) => {
     res.render("video");
-});
+});*/
 
 
 server.listen(port, "0.0.0.0", ()=> {
