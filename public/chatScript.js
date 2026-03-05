@@ -351,12 +351,12 @@ function simulateStrangerReply() {
   }, 2000);
 }
 
-if (sendBtn && chatInput) {
-  sendBtn.addEventListener("click", sendMessage);
-  chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
-}
+// if (sendBtn && chatInput) {
+//   sendBtn.addEventListener("click", sendMessage);
+//   chatInput.addEventListener("keypress", (e) => {
+//     if (e.key === "Enter") sendMessage();
+//   });
+// }
 
 // Skip Button Logic
 

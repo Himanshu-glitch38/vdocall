@@ -17,13 +17,55 @@ const blobs = document.querySelectorAll(".blob");
 
 const skipBtn = document.getElementById("skipBtn");
 
+function disableSkip(disable = true) {
+  if (skipBtn) skipBtn.disabled = disable;
+}
+
+function disableSend(disable = true) {
+  if (sendBtn) sendBtn.disabled = disable;
+}
+
+function disableChatInput(disable = true) {
+  if (chatInput) chatInput.disabled = disable;
+}
+
+
+if (sendBtn) {
+  sendBtn.addEventListener("click", () => {
+    if (!chatInput) return;
+    let textToSend = chatInput.value.trim();
+    if (!textToSend) return disableSend(true);
+    sendMessage(textToSend);
+    sendMessage(textToSend, true);
+    chatInput.value = "";
+    disableSend(true);
+  });
+}
+
+if (chatInput) {
+  chatInput.addEventListener("keyup", (event) => {
+    if (!chatInput.value.trim()) {
+      disableSend(true);
+    } else {
+      disableSend(false);
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendBtn.click();
+      }
+    }
+  });
+}
+
 function setStrangerOverlay(visible, text = "Searching for a stranger...") {
   if (strangerStatus) strangerStatus.textContent = text;
   if (strangerOverlay) strangerOverlay.classList.toggle("hidden", !visible);
 }
 setStrangerOverlay(true, "Connecting to server...");
+disableSkip(true);
+disableSend(true);
+disableChatInput(true);
 
-function startNewMatch(
+function setChatOverlay(
   visible = false,
   text = "Searching for a new stranger..."
 ) {
@@ -52,14 +94,14 @@ function startNewMatch(
   }, 1600);*/
 }
 
-function sendMessage(txt) {
+function sendMessage(txt, stranger = false) {
   if (!chatInput || !chatLog) return;
   if (!txt) return;
   const msg = txt.trim();
   if (msg) {
     // Add User Message
     const msgDiv = document.createElement("div");
-    msgDiv.className = "msg msg-me";
+    msgDiv.className = `msg ${stranger ? "msg-stranger" : "msg-me"}`;
     msgDiv.textContent = msg;
     chatLog.appendChild(msgDiv);
     chatLog.scrollTop = chatLog.scrollHeight; // Auto scroll
@@ -70,6 +112,26 @@ function sendMessage(txt) {
       blobs[0].style.background = "linear-gradient(45deg, #00d2ff, #3a7bd5)";
     if (blobs[1]) blobs[1].style.background = "#48dbfb";
   }
+}
+
+function sendBotMessage(text) {
+  if (!chatLog) return;
+  let txt = text.trim();
+  if (!txt) return;
+  // Change background to Stranger Theme (Warm/Pink)
+  if (blobs[0])
+    blobs[0].style.background =
+      "linear-gradient(45deg,rgb(209, 64, 69),rgb(36, 189, 236))";
+  if (blobs[1]) blobs[1].style.background = "#ff6b6b";
+
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "msg msg-bot";
+  msgDiv.textContent = `BOT: ${txt}`;
+  chatLog.appendChild(msgDiv);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  // `<div class="msg msg-bot msg-stranger">
+  // <span>BOT:</span>${txt}
+  // </div>`
 }
 
 async function initMedia() {
@@ -168,7 +230,7 @@ socket.on("disconnect", () => {
   cleanupPeer();
   console.log("Disconnected from the server");
   setStrangerOverlay(true, "SErver disconnected");
-  startNewMatch(true, "Disconnected from server. reload to connect.");
+  setChatOverlay(true, "Disconnected from server. reload to connect.");
   // socketConnectionText.innerHTML = "No";
   // logger.error("Disconnected from the server");
 });
@@ -178,7 +240,7 @@ socket.on("waiting", () => {
   partner = null;
   cleanupPeer();
   setStrangerOverlay(true, "Waiting for a stranger.");
-  startNewMatch(true, "Waiting for a stranger...");
+  setChatOverlay(true, "Waiting for a stranger...");
   // logger.info("Waiting for a partner...");
 });
 
@@ -186,8 +248,8 @@ socket.on("partner-disconnected", () => {
   partner = null;
   cleanupPeer();
   setStrangerOverlay(true, "Partner disconnected. searching for new one.");
-  startNewMatch(true, "Partner disconnected. searching for new one...");
-  sendMessage("Partner disconnectde");
+  setChatOverlay(true, "Partner disconnected. searching for new one...");
+  sendBotMessage("Partner disconnectde");
   // logger.warn("your Partner disconnected");
 });
 
@@ -199,15 +261,19 @@ socket.on("matched", async (partnerId) => {
   isInitiator = socket.id < partnerId;
 
   if (!localStream) {
-    //   logger.warn("Media is not ready.. Initiating now");
+    console.log("media is not ready.. inititationg now..");
     await initMedia();
   }
 
   createPeer();
-  startNewMatch(false);
+  setChatOverlay(false);
   setStrangerOverlay(false);
-  sendMessage("connected with a stranger.");
-  //   logger.log("peer created");
+  disableChatInput(false);
+  setTimeout(() => {
+    disableSkip(false);
+  }, 2000);
+  sendBotMessage("connected with a stranger.");
+  logger.log("peer created");
 });
 
 // on signal event handler
@@ -264,7 +330,7 @@ if (skipBtn) {
     }
     if (!chatLog) return;
     setStrangerOverlay(true, "Searching for new stranger...");
-    // startNewMatch('Skipping... Searching for a new stranger...');
-    startNewMatch(true, "dsiufuh");
+    // setChatOverlay('Skipping... Searching for a new stranger...');
+    setChatOverlay(true, "dsiufuh");
   });
 }
