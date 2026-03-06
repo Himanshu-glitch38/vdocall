@@ -165,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (userData) {
       const jsonUserData = JSON.parse(atob(userData));
       if (jsonUserData.isGT18) {
+        if(!ageCheckbox) return;
         ageCheckbox.checked = true;
       }
       if (jsonUserData.gender === "female") {
