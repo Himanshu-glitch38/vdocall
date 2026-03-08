@@ -6,8 +6,8 @@
     <title>Echotalk | Chat</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="chatStyle.css">
+     <!-- <link rel="stylesheet" href="https://raw.githubusercontent.com/Himanshu-glitch38/frontend2/refs/heads/main/style.css"> -->
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-
 </head>
 <body class="chat-page in-chat">
     <div class="liquid-bg">
@@ -22,7 +22,7 @@
             <span class="tagline">Instant random video chat with people around the world.</span>
         </div>
         <div class="stats">
-            <div id="counter" class="online-now" class="odometer">30,447</div> <small>Strangers Online</small>
+            <span id="counter" class="online-now">30,447</span> <small>Strangers Online</small>
             <button id="theme-toggle">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
             </button>
@@ -33,14 +33,14 @@
         <section id="video-chat-area" class="glass video-chat-area" style="display:block;">
             <div class="video-chat-layout">
                 <div class="video-container">
-                    <div class="video-wrapper">
+                    <div class="video-wrapper local-wrapper">
                         <h3>You</h3>
                         <video id="localVideo" autoplay muted playsinline></video>
                         <button id="muteBtn" class="mute-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                         </button>
                     </div>
-                    <div class="video-wrapper">
+                    <div class="video-wrapper remote-wrapper">
                         <h3>Stranger</h3>
                         <video id="remoteVideo" autoplay playsinline></video>
                         <div id="strangerOverlay" class="stranger-overlay">
@@ -96,8 +96,11 @@
         </div>
         <p>&copy; <span data-current-year>2026</span> Echotalk. All rights reserved.</p>
     </footer>
-    <script src="sockRTC.js"></script>
+
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="chatScript.js"></script>
+    <script src="./../sockRTC.js"></script>
+    <script src="./../chatScript.js"></script>
 </body>
 </html>
+
+
